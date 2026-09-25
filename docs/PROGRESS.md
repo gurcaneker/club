@@ -2,18 +2,18 @@
 
 Durum değerleri: `bekliyor` / `sürüyor` / `tamamlandı`. Her görev kapandığında: ne yapıldı, eklenen testler, açık kalan `MINOR` bulgular yazılır.
 
-Son güncelleme: 2026-09-25 — kararlar dokümanlara işlendi; M0.0 kısmen tamam; M0 iki engel nedeniyle (K1, K2) durdu.
+Son güncelleme: 2026-09-25 — K1 ve K2 kapandı; M0.0 tamamlandı; Birleştir/Ayır uyarı kuralı (K21) DESIGN §8 ve PLAN M6'ya işlendi; M0.1 başladı.
 
 ---
 
 ## M0 — İskelet ve altyapı
-**Taş durumu:** sürüyor (engelli: K1, K2)
+**Taş durumu:** sürüyor
 
 | # | Görev | Ajan | Durum | Not |
 | --- | --- | --- | --- | --- |
-| M0.1 | ADR-0001: yığın kararı (Node/pnpm sürümleri, modül sistemi, lint yapılandırması, sürüm sabitleme) | architect | bekliyor | |
+| M0.1 | ADR-0001: yığın kararı (Node/pnpm sürümleri, modül sistemi, lint yapılandırması, sürüm sabitleme) | architect | sürüyor | Sürüm ve modül sistemi kararları kullanıcı onayına sunulacak |
 | M0.2 | Monorepo iskeleti: pnpm workspaces, Turborepo, ortak tsconfig (strict), ESLint, Prettier | devops | bekliyor | |
-| M0.0 | `git init`, `.gitignore`, uzak depo, `main` dalı | orkestratör | sürüyor | `git init` + ilk commit tamam; uzak depo URL'si bekleniyor |
+| M0.0 | `git init`, `.gitignore`, uzak depo, `main` dalı | orkestratör | tamamlandı | `origin` = https://github.com/gurcaneker/club.git (HTTPS; SSH kurum ağında engelli), `main` push edildi, upstream bağlı |
 | M0.3 | Uygulama/paket iskeletleri: `apps/web`, `apps/api`, `apps/worker`, `packages/db\|shared\|templates` | devops | bekliyor | M0 iskelet istisnası (K3) |
 | M0.4 | `packages/shared`: env zod şema yardımcıları; `packages/db`: boş Prisma şeması + client | architect | bekliyor | |
 | M0.5 | Her uygulamada env doğrulama (zod), `.env.example` (açıklamalı) | devops | bekliyor | |
@@ -173,8 +173,8 @@ Plan aşamasında tespit edilen konular. Tüm kararlar 2026-09-25'te kullanıcı
 
 | # | Konu | Karar | Durum |
 | --- | --- | --- | --- |
-| K1 | Alt ajanlar oturumda yüklü değil | Proje `/home/ge-bidb/club`'a taşındı, ama ajanlar oturum başında yüklendiği için mevcut oturum hâlâ göremiyor (`architect` çağrısı "not found" döndü). Oturumun yeniden başlatılması gerekiyor. | **açık** |
-| K2 | Git deposu / CI (C6) | Özel GitHub deposu; `git init` + remote + `main` push; CI kriteri aynen kalır. Mesajdaki URL `<REPO_URL>` yer tutucusu olarak geldi, gerçek URL bekleniyor | **açık** |
+| K1 | Alt ajanlar oturumda yüklü değil | Oturum yeniden başlatıldı; 10 alt ajanın tamamı yüklü olarak doğrulandı (2026-09-25). general-purpose yedek yolu kullanılmaz; ajan eksikse durulur ve bildirilir | kapalı |
+| K2 | Git deposu / CI (C6) | Özel GitHub deposu, HTTPS remote (https://github.com/gurcaneker/club.git); SSH kullanılmaz. `main` push edildi, upstream bağlı; CI kriteri aynen kalır. Push başarısız olursa kimlik bilgisi sorunu çözülmeye çalışılmaz, durulur ve bildirilir | kapalı |
 | K3 | M0 iskelet istisnası (A1) | Onay: devops yalnızca M0'da iskelet dosyaları yazar | kapalı |
 | K4 | `packages/shared` mantık kodu (A2) | `state/`: API architect, uygulama backend-dev. `theme/`: API architect, uygulama frontend-dev, pipeline-dev tüketir | kapalı |
 | K5 | Fikstür sahipliği (A3) | test-engineer tek sahip; pipeline-dev kullanır | kapalı |
@@ -193,3 +193,4 @@ Plan aşamasında tespit edilen konular. Tüm kararlar 2026-09-25'te kullanıcı
 | K18 | Carousel sayımı (C3) | Kapak ve ara kapaklar 10 öğe sınırına dahil | kapalı |
 | K19 | Durum geçişleri (C4) | DESIGN §4 geçiş tablosu | kapalı |
 | K20 | Saat dilimi / toplama penceresi (C5) | Tenant saat dilimi (varsayılan Europe/Istanbul); pencere tenant başına | kapalı |
+| K21 | Ek durum geçişleri ve Birleştir/Ayır düzenleme kaybı | `FAILED → PROCESSING` (işleme hatası sonrası yeniden deneme) ve `PENDING_REVIEW → PROCESSING` (Birleştir/Ayır) onaylandı. Yönetici düzenlemeleri kaybolacaksa önce uyarı + teyit; düzenlenmiş metin mümkünse korunur (DESIGN §8, PLAN M6 kabul). Saklama işi M4'te (M4.5a) | kapalı |

@@ -54,7 +54,7 @@ Taslak durum makinesi: `COLLECTING → PROCESSING → PENDING_REVIEW → APPROVE
 | `COLLECTING` | `PROCESSING` | Toplama penceresi kesimi |
 | `PROCESSING` | `PENDING_REVIEW` | İşleme tamamlandı |
 | `PROCESSING` | `FAILED` | Kalıcı işleme hatası |
-| `PENDING_REVIEW` | `PROCESSING` | Birleştir/Ayır (worker yeniden düzenler) |
+| `PENDING_REVIEW` | `PROCESSING` | Birleştir/Ayır (worker yeniden düzenler); yönetici düzenlemesi varsa önce uyarı ve yönetici teyidi (§8) |
 | `PENDING_REVIEW` | `APPROVED` | Yönetici onayı (`approvedAt`, `approvedBy` yazılır) |
 | `PENDING_REVIEW` | `REJECTED` | Yönetici reddi (isteğe bağlı not) |
 | `APPROVED` | `SCHEDULED` | Yayın zamanı atanır |
@@ -119,6 +119,7 @@ Taslak durum makinesi: `COLLECTING → PROCESSING → PENDING_REVIEW → APPROVE
 - Taslak hazır olunca yöneticiye bildirim (MVP: e-posta + panel rozeti; push Faz 2).
 - Önizleme Instagram görünümünde (carousel kaydırma, metin).
 - Eylemler: Onayla (en uygun saat dilimine zamanlanır, tenant ayarı, varsayılan 19:00-21:00), Düzenle (metin, kare çıkar/sırala, kapak seç, metni yeniden üret), Birleştir/Ayır, Reddet (isteğe bağlı not).
+- **Birleştir/Ayır ve yönetici düzenlemeleri:** etkilenen taslaklardan birinde yönetici düzenlemesi (elle değiştirilmiş metin, çıkarılmış/sıralanmış kare, seçilmiş kapak) varsa, onay ekranı işlemi başlatmadan önce hangi düzenlemelerin kaybolacağını gösteren bir uyarı açar; yönetici teyit etmeden `PENDING_REVIEW → PROCESSING` geçişi olmaz. Kare düzenlemeleri yeniden düzenlemede kaybolur. Yönetici tarafından düzenlenmiş metin mümkünse korunur, yeniden üretilmez: metnin ait olduğu kaynak taslak işlem sonrası tek bir hedef taslağa eşlenebiliyorsa ve o hedef taslağa başka bir düzenlenmiş metin eşlenmiyorsa metin o hedef taslağa taşınır (ör. birleştirmede yalnızca bir kaynak taslağın metni düzenlenmişse). Aksi halde (ör. ayırmada metin birden fazla hedefe dağılıyorsa) metin yeniden üretilir; bu durum uyarıda belirtilir.
 - Onaysız kalan taslak için hatırlatma.
 - Rızasız çocuğu olan grupta taslak üstünde uyarı. Böyle bir taslak, yönetici açık bir onay kutusunu işaretlemeden onaylanamaz ("Bu karelerde yayın rızası olmayan çocuk bulunmadığını kontrol ettim"). Onay kutusu, onaylayan kişi ve zaman `AuditLog`'a yazılır.
 - Yayınlanan her içeriğin denetim kaydı (hangi fotoğraf, hangi grup, hangi post); kaldırma talebinde ilgili postlar bulunabilir.

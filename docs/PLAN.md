@@ -104,7 +104,7 @@ Varsayılan: Instagram, Anthropic ve e-posta çağrıları mock modda (`INSTAGRA
 - Onaysız taslak hatırlatması
 - İdman günü yükleme hatırlatması (`Group.trainingDays`, tenant saat dilimi, e-posta)
 
-**Kabul:** Onaylanmamış taslağın yayına gitmesini engelleyen test. Onay kutusu işaretlenmeden rızasız çocuklu grubun taslağı onaylanamaz (testle). Onaylı taslak düzenlenince `PENDING_REVIEW`'e döner (testle). İdman günü hatırlatması yalnızca yükleme yapılmamış idman günlerinde gönderilir (testle). Birleştir/Ayır e2e testi. Mobil görünüm Playwright testleri.
+**Kabul:** Onaylanmamış taslağın yayına gitmesini engelleyen test. Onay kutusu işaretlenmeden rızasız çocuklu grubun taslağı onaylanamaz (testle). Onaylı taslak düzenlenince `PENDING_REVIEW`'e döner (testle). İdman günü hatırlatması yalnızca yükleme yapılmamış idman günlerinde gönderilir (testle). Birleştir/Ayır e2e testi. Yönetici düzenlemesi olan taslakta Birleştir/Ayır önce kaybolacak düzenlemeleri listeleyen uyarı gösterir; yönetici teyit etmeden `PENDING_REVIEW → PROCESSING` geçişi yapılmaz (testle). Birleştir/Ayır sonrası, düzenlenmiş metin DESIGN §8'deki eşleme koşulunu sağlıyorsa hedef taslağa taşınır ve yeniden üretilmez; sağlamıyorsa yeniden üretilir (her iki dal testle). Mobil görünüm Playwright testleri.
 
 ## M7 — Instagram entegrasyonu
 **Sahipler:** instagram-dev, security-auditor
