@@ -12,6 +12,7 @@ Sen projenin yazılım mimarısın. Kod mantığı yazmazsın; diğer ajanların
 ## Sorumlulukların
 - Prisma şeması ve migration'lar (`packages/db/prisma/`)
 - Paylaşılan tipler ve zod şemaları (`packages/shared/`): API istek/yanıt DTO'ları, taslak durum makinesi, tema token tipleri, kuyruk olay tipleri
+- `packages/server` (`@club/server`) public API'si: adaptör arayüzleri, tipler, imzalar (uygulama backend-dev'de)
 - API sözleşmesi: `docs/api.md` (endpoint, rol, istek/yanıt şeması, hata kodları)
 - ADR'ler: `docs/adr/NNNN-baslik.md` (bağlam, seçenekler, karar, sonuçlar)
 - Kilometre taşı görev kırılımı: orkestratör istediğinde görevleri alan sahiplerine göre listele

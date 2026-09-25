@@ -2,7 +2,7 @@
 
 Durum değerleri: `bekliyor` / `sürüyor` / `tamamlandı`. Her görev kapandığında: ne yapıldı, eklenen testler, açık kalan `MINOR` bulgular yazılır.
 
-Son güncelleme: 2026-09-25 — K1 ve K2 kapandı; M0.0 tamamlandı; Birleştir/Ayır uyarı kuralı (K21) DESIGN §8 ve PLAN M6'ya işlendi; M0.1 başladı.
+Son güncelleme: 2026-09-25 — ADR-0001 kabul edildi (K22–K27); Redis → Valkey; `packages/server` eklendi; rapor kuralı çalışma döngüsüne eklendi; M0.2 başlıyor.
 
 ---
 
@@ -11,14 +11,14 @@ Son güncelleme: 2026-09-25 — K1 ve K2 kapandı; M0.0 tamamlandı; Birleştir/
 
 | # | Görev | Ajan | Durum | Not |
 | --- | --- | --- | --- | --- |
-| M0.1 | ADR-0001: yığın kararı (Node/pnpm sürümleri, modül sistemi, lint yapılandırması, sürüm sabitleme) | architect | sürüyor | Sürüm ve modül sistemi kararları kullanıcı onayına sunulacak |
+| M0.1 | ADR-0001: yığın kararı (Node/pnpm sürümleri, modül sistemi, lint yapılandırması, sürüm sabitleme) | architect | tamamlandı | `docs/adr/0001-stack.md` kabul edildi (2026-09-25). [D] değerleri ve TS/Prisma/Valkey doğrulama sonuçları M0.2/M0.3'te devops tarafından ADR'ye yazılır |
 | M0.2 | Monorepo iskeleti: pnpm workspaces, Turborepo, ortak tsconfig (strict), ESLint, Prettier | devops | bekliyor | |
 | M0.0 | `git init`, `.gitignore`, uzak depo, `main` dalı | orkestratör | tamamlandı | `origin` = https://github.com/gurcaneker/club.git (HTTPS; SSH kurum ağında engelli), `main` push edildi, upstream bağlı |
-| M0.3 | Uygulama/paket iskeletleri: `apps/web`, `apps/api`, `apps/worker`, `packages/db\|shared\|templates` | devops | bekliyor | M0 iskelet istisnası (K3) |
+| M0.3 | Uygulama/paket iskeletleri: `apps/web`, `apps/api`, `apps/worker`, `packages/db\|shared\|templates\|server` | devops | bekliyor | M0 iskelet istisnası (K3); CJS→ESM ve @club/db import smoke testleri (K22) |
 | M0.4 | `packages/shared`: env zod şema yardımcıları; `packages/db`: boş Prisma şeması + client | architect | bekliyor | |
 | M0.5 | Her uygulamada env doğrulama (zod), `.env.example` (açıklamalı) | devops | bekliyor | |
-| M0.6 | `docker-compose.dev.yml`: PostgreSQL, Redis, MinIO + bucket init | devops | bekliyor | |
-| M0.7 | CI: lint + typecheck + unit test + build (GitHub Actions) | devops | bekliyor | |
+| M0.6 | `docker-compose.dev.yml`: PostgreSQL, Valkey, MinIO + bucket init | devops | bekliyor | İmajlar digest ile sabit (K24, K26) |
+| M0.7 | CI: lint + typecheck + unit test + build (GitHub Actions) + `renovate.json` | devops | bekliyor | Renovate gruplaması K25 |
 | M0.8 | Test kapısı: iskelet testleri, `pnpm lint/typecheck/test/build`, `pnpm dev` dumanı | test-engineer | bekliyor | |
 | M0.9 | İnceleme kapısı | code-reviewer (+ security-auditor: env/sır) | bekliyor | |
 
@@ -194,3 +194,9 @@ Plan aşamasında tespit edilen konular. Tüm kararlar 2026-09-25'te kullanıcı
 | K19 | Durum geçişleri (C4) | DESIGN §4 geçiş tablosu | kapalı |
 | K20 | Saat dilimi / toplama penceresi (C5) | Tenant saat dilimi (varsayılan Europe/Istanbul); pencere tenant başına | kapalı |
 | K21 | Ek durum geçişleri ve Birleştir/Ayır düzenleme kaybı | `FAILED → PROCESSING` (işleme hatası sonrası yeniden deneme) ve `PENDING_REVIEW → PROCESSING` (Birleştir/Ayır) onaylandı. Yönetici düzenlemeleri kaybolacaksa önce uyarı + teyit; düzenlenmiş metin mümkünse korunur (DESIGN §8, PLAN M6 kabul). Saklama işi M4'te (M4.5a) | kapalı |
+| K22 | ADR-0001 onayı ve doğrulama kuralları | ADR "Kabul edildi". TS: Next.js, Nest CLI/SWC ve typescript-eslint TS 6'yı resmi olarak destekliyorsa 6.x, desteklemiyorsa 5.9.x; sonuç ve kaynak ADR'ye yazılır. M0 kabulüne CJS→ESM smoke testi eklendi: api `@club/shared`'den gerçek bir fonksiyonu çağırır; `tsc --noEmit`, SWC build ve `node dist/main.js` üçü de geçmeli. Prisma ana sürümü, üretici, modül biçimi ve driver adapter doğrulanır; @club/db için CJS geri dönüşü bu sonuca göre değerlendirilir; api ve worker'dan import smoke testi yapılır. [D] farkı ya da TS/Prisma/Valkey kontrollerinden biri başarısız olursa devops durur ve bildirir | kapalı |
+| K23 | S4: paylaşılan sunucu kodu | Tenant Prisma extension `packages/db/src/` altında (`prisma/` → architect, `src/` → backend-dev). Yeni paket `packages/server` (`@club/server`): S3, `EmailSender` ve diğer adaptörler; public API architect, uygulama backend-dev, worker yalnızca tüketir. web'in `@club/server` ve `@club/db` import etmesi lint ile yasak. CLAUDE.md ve backend-dev.md güncellendi | kapalı |
+| K24 | S1: MinIO | Geliştirmede doğrulanmış son imaj digest ile sabitlenir. Prod depolama M9'da ayrı ADR ile belirlenir; adaylar arasında Contabo Object Storage var | kapalı |
+| K25 | S2: Renovate | GitHub App'ini kullanıcı kuracak. Gruplama: pnpm catalog tek PR, GitHub Actions tek PR, Docker digest'leri tek PR; haftalık program | kapalı |
+| K26 | S3: Redis → Valkey | Lisans sorusu kapandı. BullMQ uyumluluğunu devops doğrular; imaj digest ile sabitlenir; env adı `REDIS_URL` kalır | kapalı |
+| K27 | S5 ve rapor kuralı | `tooling/tsconfig/` devops'ta; paketlerdeki `vitest.config.ts` M0 sonrası test-engineer'da. Rapor vermeden biten ajan görevi tamamlanmış sayılmaz; aynı ajana raporu tamamlatmak için takip görevi verilir (CLAUDE.md) | kapalı |

@@ -9,15 +9,15 @@ Varsayılan: Instagram, Anthropic ve e-posta çağrıları mock modda (`INSTAGRA
 ## M0 — İskelet ve altyapı
 **Sahipler:** devops, architect
 
-- Monorepo (pnpm + Turborepo), `apps/web`, `apps/api`, `apps/worker`, `packages/db|shared|templates` (devops, M0 iskelet istisnasıyla; bkz. CLAUDE.md)
-- TypeScript strict, ESLint, Prettier, ortak tsconfig
-- `docker-compose.dev.yml`: PostgreSQL, Redis, MinIO (+ bucket oluşturma)
+- Monorepo (pnpm + Turborepo), `apps/web`, `apps/api`, `apps/worker`, `packages/db|shared|server|templates` (devops, M0 iskelet istisnasıyla; bkz. CLAUDE.md)
+- TypeScript strict (TS 6.x ya da 5.9.x, ADR-0001 Karar 4 seçim kuralıyla), ESLint, Prettier, ortak tsconfig
+- `docker-compose.dev.yml`: PostgreSQL, Valkey (kuyruk; env adı `REDIS_URL`), MinIO (+ bucket oluşturma); imajlar etiket + digest ile sabit
 - `.env.example` (tüm değişkenler açıklamalı), env doğrulama (zod) her uygulamada
 - CI: lint + typecheck + unit test + build
 - `docs/adr/0001-stack.md`
 - Git deposu, GitHub uzak deposu, `main` dalı
 
-**Kabul:** `pnpm dev` ile üç uygulama ayağa kalkar; `pnpm test` ve `pnpm lint` geçer; CI yeşil.
+**Kabul:** `pnpm dev` ile üç uygulama ayağa kalkar; `pnpm test` ve `pnpm lint` geçer; CI yeşil. CJS→ESM köprüsü duman testi (ADR-0001 S-1): `apps/api`, `@club/shared/env`'den gerçek bir fonksiyonu (`parseEnv`) içe aktarıp çağırır ve üç kontrolün hepsi geçer: `tsc --noEmit` (`module`/`moduleResolution` `node20`), SWC build ve çalışma zamanı (`node apps/api/dist/smoke.js` ile `node apps/api/dist/main.js`; ya da ADR'ye işlenen gerçek çıktı yolu). `@club/db` içe aktarma duman testi (ADR-0001 S-2): api ve worker `PrismaClient`'ı içe aktarıp veritabanına bağlanmadan örnekler (modelsiz şema). BullMQ kuyruk turu dev compose'daki Valkey'e karşı çalışır. ADR-0001'deki "Doğrulama sonucu" alanları (D-TS, D-PRISMA, D-VALKEY, D-MINIO, D-SMOKE) doldurulmuştur.
 
 ## M1 — Veri modeli, auth, tenant izolasyonu
 **Sahipler:** architect (şema, ADR), backend-dev, test-engineer
@@ -26,10 +26,10 @@ Varsayılan: Instagram, Anthropic ve e-posta çağrıları mock modda (`INSTAGRA
 - `packages/shared/src/state/`: durum geçiş public API'si (architect) + DESIGN §4 tablosunun uygulaması (backend-dev)
 - ADR-0002 (tenant çözümleme): API tarafında alt alan adı + JWT. PLATFORM_ADMIN için açıkça tanımlanmış tenant'sız bağlam. Veli rıza linki için tenant'ın token'dan çözülmesi. Web tarafı M8'de.
 - ADR-0003 (auth oturumu): access ve refresh token `httpOnly` + `Secure` + `SameSite=Lax` cookie'lerde; **`Domain` niteliği yok** (cookie host'a özel). Tenant alt alan adları birbirine göre same-site sayıldığı için değişiklik yapan her istekte (POST/PUT/PATCH/DELETE) ayrıca double-submit CSRF token'ı zorunlu.
-- Tenant bağlamı: istek başına tenant çözümleme, Prisma extension ile otomatik `tenantId` filtresi
+- Tenant bağlamı: istek başına tenant çözümleme, Prisma extension ile otomatik `tenantId` filtresi (extension `packages/db/src/`'de, backend-dev; api ve worker ortak kullanır)
 - Auth: e-posta + şifre (argon2), JWT access + refresh (ADR-0003'e göre cookie), CSRF koruması, rol guard'ları; antrenör için davet linki
 - Giriş endpoint'inde hız sınırlama (IP ve hesap bazlı)
-- `EmailSender` arayüzü + `MockEmailSender` (backend-dev)
+- `packages/server` (`@club/server`) modülleri: `email` (`EmailSender` arayüzü + `MockEmailSender`) ve `storage` (S3 istemcisi). Public API (`src/<modül>/contract.ts`, `index.ts`) architect, uygulama backend-dev (ADR-0001 Karar 3.8)
 - PLATFORM_ADMIN için tenant açma CLI/seed betiği (arayüz Faz 3)
 - Seed: pilot tenant, 1 admin, 2 antrenör, 3 grup (idman günleriyle), sentetik öğrenciler
 
@@ -135,7 +135,8 @@ Varsayılan: Instagram, Anthropic ve e-posta çağrıları mock modda (`INSTAGRA
 **Sahipler:** devops, test-engineer, code-reviewer, security-auditor
 
 - Tam e2e senaryo: antrenör yükler → worker işler → taslak → yönetici onaylar → mock yayın → galeri
-- Prod `docker-compose.yml`, Nginx (alt alan adları, wildcard sertifika, medya için presigned proxy), yedekleme betiği (Postgres + S3)
+- Prod depolama ADR'si (S3 uyumlu; adaylar arasında Contabo Object Storage), architect
+- Prod `docker-compose.yml` (Valkey dahil, imajlar digest ile sabit), Nginx (alt alan adları, wildcard sertifika, medya için presigned proxy), yedekleme betiği (Postgres + S3)
 - Loglama (PII'siz), sağlık kontrolleri
 - Son tam inceleme ve güvenlik denetimi, açık bulguların kapatılması
 - `docs/RUNBOOK.md`: kurulum, yedek, geri yükleme, token yenileme sorunları, Instagram'dan elle post silme (gerekirse)

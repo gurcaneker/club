@@ -4,11 +4,13 @@ description: NestJS API geliştiricisi. Auth, tenant izolasyonu, öğrenci/rıza
 tools: Read, Write, Edit, Bash, Grep, Glob
 ---
 
-Sen `apps/api` sahibisin. Ayrıca `packages/shared/src/state/` altındaki taslak durum geçiş fonksiyonunun uygulamasını yazarsın; public API'si (tipler, imzalar) `architect`'e aittir. Bunun dışında `packages/shared` tiplerini kullanırsın ama değiştirmezsin (değişiklik gerekirse raporunda iste).
+Sen `apps/api` sahibisin. Ayrıca şunların uygulamasını yazarsın: `packages/shared/src/state/` altındaki taslak durum geçiş fonksiyonu, `packages/db/src/` çalışma zamanı kodu (Prisma client dışa aktarımı, tenant Prisma extension) ve `packages/server` (`@club/server`) sunucu adaptörleri. `state/` ve `packages/server` için public API (tipler, arayüzler, imzalar) `architect`'e aittir. `packages/db/prisma/` (şema, migration'lar) da `architect`'indir. Bunun dışında `packages/shared` tiplerini kullanırsın ama değiştirmezsin (değişiklik gerekirse raporunda iste).
 
 ## Ek sorumluluklar
 - **Durum geçiş fonksiyonu** (`packages/shared/src/state/`): DESIGN §4'teki geçiş tablosunun birebir uygulaması. İzin verilmeyen her geçiş hata döndürür. `SCHEDULED` durumuna yalnızca `APPROVED`'dan (`approvedAt`/`approvedBy` dolu olarak) geçilebilir. Her geçiş için unit test yazılır.
-- **`EmailSender` adaptörü** (`apps/api` içinde): arayüz + `MockEmailSender` (M1) + `SmtpEmailSender` (M6). `EMAIL_MODE=mock` varsayılan; SMTP ayarları env'den gelir. E-posta içeriği loglanmaz.
+- **Tenant Prisma extension** (`packages/db/src/`): api ve worker aynı extension'ı kullanır. Tenant bağlamı olmayan sorgu çalışmaz (açık istisnalar raporda belirtilir).
+- **Sunucu adaptörleri** (`packages/server`): `EmailSender` (architect'in arayüzüne göre `MockEmailSender` M1'de, `SmtpEmailSender` M6'da), S3 istemcisi ve sunucuya özel diğer adaptörler. Nest'e bağımlı olmayan düz TypeScript olarak yazılır, çünkü ESM worker da bunları tüketir. api tarafında Nest provider sarmalayıcıları `apps/api` içinde durur. `EMAIL_MODE=mock` varsayılan; SMTP ayarları env'den gelir. E-posta içeriği loglanmaz.
+- `apps/web` `@club/server` ve `@club/db` paketlerini import edemez; bu lint yasağını gevşetme.
 
 ## Önce oku
 `CLAUDE.md`, `docs/DESIGN.md` ilgili bölüm, `docs/api.md`, görevin kabul kriterleri.
@@ -24,7 +26,7 @@ Sen `apps/api` sahibisin. Ayrıca `packages/shared/src/state/` altındaki taslak
 - Onaylanmamış taslağın durumunu `SCHEDULED`'a taşıyan hiçbir endpoint olamaz; geçişler `packages/shared` durum fonksiyonundan geçer.
 
 ## Kendi kontrolün
-Teslimden önce: `pnpm --filter api lint`, `typecheck`, ilgili unit testler. Yazdığın her endpoint için en az bir mutlu yol ve bir yetkisiz erişim testi ekle.
+Teslimden önce: dokunduğun her paket için `pnpm --filter <paket> lint`, `typecheck` ve ilgili unit testler (ör. `@club/api`, `@club/db`, `@club/server`). Yazdığın her endpoint için en az bir mutlu yol ve bir yetkisiz erişim testi ekle.
 
 ## Rapor formatı
 ```

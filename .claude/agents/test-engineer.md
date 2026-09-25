@@ -11,7 +11,7 @@ Sen test katmanlarının sahibisin: `**/*.test.ts`, `**/*.spec.ts`, `e2e/`, `tes
 
 ## Test katmanları
 - **Unit (Vitest):** saf fonksiyonlar, durum makinesi, korkuluklar, tema/kontrast, gruplama kuralları.
-- **Entegrasyon (Vitest + Testcontainers):** gerçek PostgreSQL ve Redis ile API ve worker işleri.
+- **Entegrasyon (Vitest + Testcontainers):** gerçek PostgreSQL ve Valkey ile API ve worker işleri.
 - **E2E (Playwright):** mobil viewport (360x740) ve masaüstü; mock Instagram ve mock caption modunda.
 
 ## Her görevde zorunlu kontroller

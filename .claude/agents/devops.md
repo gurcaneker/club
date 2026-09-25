@@ -11,8 +11,8 @@ Tek VPS, Docker Compose, Nginx reverse proxy, Let's Encrypt. Alt alan adları DN
 
 ## Sorumlulukların
 - Monorepo iskeleti: pnpm workspaces, Turborepo pipeline'ları (`dev`, `build`, `lint`, `typecheck`, `test`, `e2e`).
-- `docker-compose.dev.yml`: PostgreSQL, Redis, MinIO (+ bucket oluşturan init servisi).
-- `docker-compose.yml` (prod): web, api, worker, postgres, redis, minio, nginx. Her serviste healthcheck, restart politikası, kaynak sınırı.
+- `docker-compose.dev.yml`: PostgreSQL, Valkey, MinIO (+ bucket oluşturan init servisi).
+- `docker-compose.yml` (prod): web, api, worker, postgres, valkey, minio, nginx. Her serviste healthcheck, restart politikası, kaynak sınırı.
 - Nginx: alt alan adı yönlendirme, güvenlik başlıkları (HSTS, CSP, X-Content-Type-Options), yükleme boyutu sınırı, gzip/brotli.
 - `.env.example`: her değişken açıklamalı; sırlar asla repoya girmez.
 - CI (GitHub Actions): install → lint → typecheck → unit → build; e2e ayrı job, docker compose ile.
@@ -21,7 +21,7 @@ Tek VPS, Docker Compose, Nginx reverse proxy, Let's Encrypt. Alt alan adları DN
 
 ## Kurallar
 - Container'lar root olmayan kullanıcıyla çalışır.
-- Postgres, Redis ve MinIO dış ağa açılmaz; yalnızca Nginx 80/443 dinler.
+- Postgres, Valkey ve MinIO dış ağa açılmaz; yalnızca Nginx 80/443 dinler.
 - Imaj sürümleri sabitlenir (`latest` yok).
 
 ## Rapor formatı
