@@ -10,14 +10,14 @@ Varsayılan: Instagram, Anthropic ve e-posta çağrıları mock modda (`INSTAGRA
 **Sahipler:** devops, architect
 
 - Monorepo (pnpm + Turborepo), `apps/web`, `apps/api`, `apps/worker`, `packages/db|shared|server|templates` (devops, M0 iskelet istisnasıyla; bkz. CLAUDE.md)
-- TypeScript strict (TS 6.x ya da 5.9.x, ADR-0001 Karar 4 seçim kuralıyla), ESLint, Prettier, ortak tsconfig
+- TypeScript strict (TS 6.0.3, ADR-0001 Karar 4), tüm Node paketleri ESM (NestJS 12 dahil), ESLint 9, Prettier, ortak tsconfig
 - `docker-compose.dev.yml`: PostgreSQL, Valkey (kuyruk; env adı `REDIS_URL`), MinIO (+ bucket oluşturma); imajlar etiket + digest ile sabit
 - `.env.example` (tüm değişkenler açıklamalı), env doğrulama (zod) her uygulamada
 - CI: lint + typecheck + unit test + build
 - `docs/adr/0001-stack.md`
 - Git deposu, GitHub uzak deposu, `main` dalı
 
-**Kabul:** `pnpm dev` ile üç uygulama ayağa kalkar; `pnpm test` ve `pnpm lint` geçer; CI yeşil. CJS→ESM köprüsü duman testi (ADR-0001 S-1): `apps/api`, `@club/shared/env`'den gerçek bir fonksiyonu (`parseEnv`) içe aktarıp çağırır ve üç kontrolün hepsi geçer: `tsc --noEmit` (`module`/`moduleResolution` `node20`), SWC build ve çalışma zamanı (`node apps/api/dist/smoke.js` ile `node apps/api/dist/main.js`; ya da ADR'ye işlenen gerçek çıktı yolu). `@club/db` içe aktarma duman testi (ADR-0001 S-2): api ve worker `PrismaClient`'ı içe aktarıp veritabanına bağlanmadan örnekler (modelsiz şema). BullMQ kuyruk turu dev compose'daki Valkey'e karşı çalışır. ADR-0001'deki "Doğrulama sonucu" alanları (D-TS, D-PRISMA, D-VALKEY, D-MINIO, D-SMOKE) doldurulmuştur.
+**Kabul:** `pnpm dev` ile üç uygulama ayağa kalkar; `pnpm test`, `pnpm lint` ve `pnpm typecheck` geçer; CI yeşil (typecheck ve build ayrı adımlar). ESM içe aktarma duman testi (ADR-0001 S-1): `apps/api`, `@club/shared/env`'den gerçek bir fonksiyonu (`parseEnv`) içe aktarıp çağırır ve üç kontrolün hepsi geçer: `tsc --noEmit` (`module: node20`, `moduleResolution: nodenext`), `nest build` (`tsc` builder) ve çalışma zamanı (`node apps/api/dist/smoke.js` ile `node apps/api/dist/main.js`). `@club/db` içe aktarma duman testi (ADR-0001 S-2): api ve worker `PrismaClient`'ı içe aktarıp veritabanına bağlanmadan örnekler (modelsiz şema). DI metadata duman testi (ADR-0001 S-3): `apps/api`'de bir servis diğerini `@Inject()` olmadan yalnızca constructor tipiyle alır; Vitest (`globals: false`, SWC'siz) testi `Test.createTestingModule` ile bağımlılığın enjekte edildiğini ve `design:paramtypes` metadata'sını doğrular. `packages/*` içindeki top-level await lint ile reddedilir. BullMQ kuyruk turu dev compose'daki Valkey'e karşı çalışır. ADR-0001'deki "Doğrulama sonucu" alanları (D-TS, D-PRISMA, D-VALKEY, D-MINIO, D-SMOKE, D-GENEL) doldurulmuştur.
 
 ## M1 — Veri modeli, auth, tenant izolasyonu
 **Sahipler:** architect (şema, ADR), backend-dev, test-engineer

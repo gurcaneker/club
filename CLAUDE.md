@@ -65,6 +65,19 @@ Bir ajana alanı dışındaki dosyayı değiştirmesi gereken iş verme. Alan ç
 
 Paralel çalıştırma: yalnızca dosya alanları çakışmayan ajanları paralel çalıştır (örneğin `backend-dev` ile `frontend-dev`, sözleşme önceden sabitlenmişse).
 
+## Orkestratör karar yetkisi
+
+Aşağıdaki durumlarda durmadan ilerle. Kararı gerekçesiyle ADR'ye veya `docs/PROGRESS.md`'ye yaz ve taş sonu raporunda "Benim onayım olmadan verilen kararlar" başlığı altında listele:
+- Aynı ana sürüm içindeki patch/minor farkları ve sabitlenecek tam sürümün seçimi.
+- Kullanılan aracın resmi dokümanındaki veya referans iskeletindeki varsayılanı seçmek. Bu varsayılan ADR'de açıkça reddedilmiş bir seçenek olmamalı (ör. oxlint, Vitest `globals: true`).
+- Yapılandırma ayrıntıları (tsconfig bayrakları, lint kuralı ince ayarı, compose healthcheck parametreleri).
+
+Aşağıdaki durumlarda dur ve kullanıcıya sor:
+- Bir ana sürüm değişikliği ya da ADR'deki bir kararı tersine çeviren bir durum.
+- Değişmez kurallardan (tenant izolasyonu, onaysız yayın yok, çocuk verisi, sırlar) birine dokunan her şey.
+- Bir geri dönüş yolunun da başarısız olması.
+- Maliyet, lisans veya dış hesap gerektiren her şey.
+
 ## Değişmez kurallar
 
 - **Tenant izolasyonu:** tenant'a ait her tablo `tenantId` taşır. Her sorgu tenant bağlamından geçer (Prisma extension/middleware). Çapraz tenant erişim testleri zorunludur.

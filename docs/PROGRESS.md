@@ -2,7 +2,7 @@
 
 Durum değerleri: `bekliyor` / `sürüyor` / `tamamlandı`. Her görev kapandığında: ne yapıldı, eklenen testler, açık kalan `MINOR` bulgular yazılır.
 
-Son güncelleme: 2026-09-25 — ADR-0001 kabul edildi (K22–K27); Redis → Valkey; `packages/server` eklendi; rapor kuralı çalışma döngüsüne eklendi; M0.2 başlıyor.
+Son güncelleme: 2026-09-25 — ADR-0001 Revizyon 2 (Nest 12 + ESM, TS 6.0.3, tsc builder, Vitest 4.1.11); karar yetkisi kuralı CLAUDE.md'ye eklendi; M0.2 baştan başlıyor.
 
 ---
 
@@ -11,7 +11,7 @@ Son güncelleme: 2026-09-25 — ADR-0001 kabul edildi (K22–K27); Redis → Val
 
 | # | Görev | Ajan | Durum | Not |
 | --- | --- | --- | --- | --- |
-| M0.1 | ADR-0001: yığın kararı (Node/pnpm sürümleri, modül sistemi, lint yapılandırması, sürüm sabitleme) | architect | tamamlandı | `docs/adr/0001-stack.md` kabul edildi (2026-09-25). [D] değerleri ve TS/Prisma/Valkey doğrulama sonuçları M0.2/M0.3'te devops tarafından ADR'ye yazılır |
+| M0.1 | ADR-0001: yığın kararı (Node/pnpm sürümleri, modül sistemi, lint yapılandırması, sürüm sabitleme) | architect | tamamlandı | `docs/adr/0001-stack.md` kabul edildi (2026-09-25); Revizyon 2 (K28) Nest 12 referans iskelet doğrulamasıyla. [D] değerleri ve TS/Prisma/Valkey doğrulama sonuçları M0.2/M0.3'te devops tarafından ADR'ye yazılır |
 | M0.2 | Monorepo iskeleti: pnpm workspaces, Turborepo, ortak tsconfig (strict), ESLint, Prettier | devops | bekliyor | |
 | M0.0 | `git init`, `.gitignore`, uzak depo, `main` dalı | orkestratör | tamamlandı | `origin` = https://github.com/gurcaneker/club.git (HTTPS; SSH kurum ağında engelli), `main` push edildi, upstream bağlı |
 | M0.3 | Uygulama/paket iskeletleri: `apps/web`, `apps/api`, `apps/worker`, `packages/db\|shared\|templates\|server` | devops | bekliyor | M0 iskelet istisnası (K3); CJS→ESM ve @club/db import smoke testleri (K22) |
@@ -200,3 +200,19 @@ Plan aşamasında tespit edilen konular. Tüm kararlar 2026-09-25'te kullanıcı
 | K25 | S2: Renovate | GitHub App'ini kullanıcı kuracak. Gruplama: pnpm catalog tek PR, GitHub Actions tek PR, Docker digest'leri tek PR; haftalık program | kapalı |
 | K26 | S3: Redis → Valkey | Lisans sorusu kapandı. BullMQ uyumluluğunu devops doğrular; imaj digest ile sabitlenir; env adı `REDIS_URL` kalır | kapalı |
 | K27 | S5 ve rapor kuralı | `tooling/tsconfig/` devops'ta; paketlerdeki `vitest.config.ts` M0 sonrası test-engineer'da. Rapor vermeden biten ajan görevi tamamlanmış sayılmaz; aynı ajana raporu tamamlatmak için takip görevi verilir (CLAUDE.md) | kapalı |
+| K28 | ADR-0001 Revizyon 2 | NestJS 12 + ESM api; tüm Node paketleri ESM, `require(esm)` köprüsü çıkarıldı. TS 6.0.3 tam sürüm; seçim kuralında SWC çıkarıldı, Nest 12 CLI/schematics ve Prisma 7.10.0 eklendi; destek yoksa kullanıcıya sorulur. api builder `tsc`, SWC yok; Vitest 4.1.11 (Oxc metadata), dar geri dönüş yalnızca Vitest'e `unplugin-swc`. S-3 DI metadata testi (`@Inject()` yok) M0 kabulünde. ESLint 9 + `eslint-config-next`; `globals: false`. `packages/*` içinde top-level await lint ile yasak. Renovate: `typescript` 6.0.x'te (typescript-eslint peer `<6.1.0`), typescript + typescript-eslint tek grup. pnpm 11.18.0, `allowBuilds`; BullMQ 6.x; Prisma 7.10.0 (`prisma-client`, ESM, pg adaptörü) | kapalı |
+| K29 | Orkestratör karar yetkisi | CLAUDE.md'ye "Orkestratör karar yetkisi" bölümü eklendi; onaysız kararlar aşağıdaki tabloya ve taş sonu raporuna yazılır | kapalı |
+
+## Benim onayım olmadan verilen kararlar
+
+CLAUDE.md "Orkestratör karar yetkisi" kapsamında verilen kararlar. Taş sonu raporunda listelenir.
+
+| # | Taş | Karar | Gerekçe | Kayıt |
+| --- | --- | --- | --- | --- |
+| O1 | M0 | `module: "node20"`, `moduleResolution: "nodenext"` (tüm Node paketleri) | TS 6.0.3'te `moduleResolution: node20` geçersiz (TS6046). `module` için `node20` kararının geçerli kısmı korunuyor; TS tam sürümle sabit olduğu için `nodenext`'in sürümle değişme riski yok (D-NESTREF) | ADR-0001 Karar 3 |
+| O2 | M0 | api'de `verbatimModuleSyntax: true` (architect önerisi) | D-NESTREF'te DI, build ve testlerle uyumlu çıktı; tsconfig bayrağı | ADR-0001 |
+| O3 | M0 | `@nestjs/cli` 12.0.7; kurulumda 1 günlük yaş sınırını geçmemişse 12.0.6 | Aynı ana sürüm içinde tam sürüm seçimi; pnpm `minimumReleaseAge` | ADR-0001 |
+| O4 | M0 | S-3 DI test dosyası M0.8'de test-engineer tarafından yazılır; servis dosyaları M0.3'te devops'ta | CLAUDE.md sahipliği: `*.test.ts` test-engineer'ın | ADR-0001 Duman testleri |
+| O5 | M0 | Top-level await yasağı ESLint çekirdek `no-restricted-syntax` seçicileriyle; seçici tutmazsa devops ince ayar yapar (negatif test geçmeli) | Lint kuralı ince ayarı | ADR-0001 Karar 5 |
+| O6 | M0 | Vitest `include` projede `*.test.ts` kalır; Nest iskeletinin `*.spec.ts` kalıbı alınmaz; `vite-tsconfig-paths` yerine Vite 8 yerleşik `resolve.tsconfigPaths` | ADR Karar 6 ve CLAUDE.md test dosyası sahipliğiyle tutarlılık; tsconfck'in TS 6 peer uyumsuzluğu | ADR-0001 Karar 6 |
+| O7 | M0 | api `@club/templates` import edemez (yeni gerekçe: render yalnızca worker'da); önizleme worker'ın ürettiği türev görsellerden | DESIGN §6/§8 akışıyla uyumlu (işleme worker'da) | ADR-0001 Karar 3.3 |
